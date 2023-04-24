@@ -11,22 +11,37 @@
         width: 100%;
         min-height: 100vh;
       }
-      svg {
+      #svgboard {
         min-height: 50vh;
       }
 
-      .cell {
-        border: 1px solid #555;
-        width: 50px;
-        height: 50px;
-        line-height: 50px;
-        text-align: center;
+      ul {
+        list-style-type: none;
+        height: 18dvh;
+      }
+      li {
+        display: inline-block;
+        height: 100%;
       }
     </style>
   </head>
   <body>
     <div id="app">
       <header></header>
+    </div>
+    <button type="button" id="game_info_toggler">Info</button>
+    <div id="game_info">
+      <pre>
+Paradox is a 2-players game, white and black.
+The goal is to make a straight sequence of 4 stones of the player's color.
+Each turn, the player has to pick 2 adjacent stones of different colors and either move them in the same orientation, or switch them.
+A player may not play the exact opposite move the the last move played.
+
+For switching, click on either of the previously selected stones.
+Note that moving is done by clicking the destination of the <b>2nd</b> stone.
+</pre>
+      <ul id="move_list">
+      </ul>
     </div>
     <script src="./src/App.ts"></script>
   </body>

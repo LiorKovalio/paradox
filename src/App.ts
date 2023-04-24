@@ -1,7 +1,7 @@
-import { Hex, Grid } from 'honeycomb-grid'
+import { defineHex, Grid, Hex, spiral } from 'honeycomb-grid'
 import { SVG, Svg } from '@svgdotjs/svg.js'
 import { Client } from 'boardgame.io/client';
-import { Paradox, StoneColor, Stone } from './Game';
+import { Paradox, StoneColor, Stone, ParadoxMove } from './Game';
 
 function parseId(id: string): number[] | null {
   return id.split('_').splice(1, 2).map(x => parseInt(x)) || null;
@@ -29,7 +29,7 @@ class GameClient {
     const deserializedGrid = JSON.parse(this.client.getState().G.grid);
     this.grid = Grid.fromJSON(deserializedGrid);
     this.rootElement = rootElement;
-    this.svg = SVG().addTo(this.rootElement).size('100%', '100%');
+    this.svg = SVG().addTo(this.rootElement).size('100%', '100%').attr({ id: 'svgboard', });
     this.createBoard();
     this.createExtraControls();
     this.attachListeners();
@@ -135,6 +135,77 @@ class GameClient {
     }
   }
 }
+
+function makeMoveDemo(node, move: ParadoxMove) {
+  let item = node.appendChild(document.createElement("li"));
+  let svg = SVG().addTo(item).size('100%', '100%');
+  const Tile = defineHex({ origin: 'topLeft', dimensions: 15, });
+  const grid = new Grid(Tile, spiral({ start: [3, 3], radius: 3 }));
+  grid.forEach(hex => {
+    // create a polygon from a hex's corner points
+    const polygon = svg
+      .polygon(hex.corners.map(({ x, y }) => [x, y]).reduce((a, b) => a.concat(b), []))
+      .fill('#C4A484')
+      .stroke({ width: 3, color: '#999' })
+      .attr({ id: `demohex_${hex.q}_${hex.r}`, class: 'hex', });
+
+    svg.group().add(polygon);
+  });
+
+
+  [...move.src].forEach((stone, i) => {
+    const src_hex = grid.getHex(stone)!;
+    const dx = grid.getHex(move.dest[i])!.corners[0].x - src_hex.corners[0].x;
+    const dy = grid.getHex(move.dest[i])!.corners[0].y - src_hex.corners[0].y;
+    const polygon = svg
+      .polygon(src_hex.corners.map(({ x, y }) => [x, y]).reduce((a, b) => a.concat(b), []))
+      .fill(stone.color)
+      .stroke({ width: 3, color: '#999' })
+      .attr({ class: 'hex', }).animate(1000).dmove(dx, dy).loop(undefined, true, 100);
+
+    svg.group().add(polygon.element());
+  });
+}
+
+const demoUl = document.getElementById('move_list');
+[
+  {
+    src: [
+      { color: "black", q: 3, r: 3, },
+      { color: "white", q: 3, r: 2, },
+    ],
+    dest: [
+      { color: "black", q: 2, r: 3, },
+      { color: "white", q: 2, r: 2, },
+    ]
+  },
+  {
+    src: [
+      { color: "black", q: 3, r: 3, },
+      { color: "white", q: 3, r: 2, },
+    ],
+    dest: [
+      { color: "black", q: 3, r: 2, },
+      { color: "white", q: 3, r: 1, },
+    ]
+  },
+  {
+    src: [
+      { color: "black", q: 3, r: 3, },
+      { color: "white", q: 3, r: 2, },
+    ],
+    dest: [
+      { color: "black", q: 3, r: 2, },
+      { color: "white", q: 3, r: 3, },
+    ]
+  }
+].forEach(move => makeMoveDemo(demoUl, move));
+
+document.getElementById("game_info_toggler")?.addEventListener("click", () => {
+  let elem = document.getElementById('game_info')!;
+  if (elem.style.display === 'none') { elem.style.display = 'block'; }
+  else { elem.style.display = 'none'; }
+});
 
 const appElement = document.getElementById('app');
 const app = new GameClient(appElement);

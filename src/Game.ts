@@ -9,8 +9,8 @@ export type Stone = {
   q: number;
   r: number;
 };
-type StonePair = [Stone, Stone];
-type ParadoxMove = {
+export type StonePair = [Stone, Stone];
+export type ParadoxMove = {
   src: StonePair,
   dest: StonePair,
 };
