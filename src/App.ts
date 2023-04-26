@@ -21,6 +21,9 @@ class GameClient {
   grid: Grid<Hex>;
   rootElement: any;
   svg: Svg;
+  xmin: number;
+  xmax: number;
+  stroke_width: number;
 
   constructor(rootElement, debug = false) {
     this.debug = debug;
@@ -28,8 +31,15 @@ class GameClient {
     this.client.start();
     const deserializedGrid = JSON.parse(this.client.getState().G.grid);
     this.grid = Grid.fromJSON(deserializedGrid);
+
+    let xs: number[] = [];
+    this.grid.forEach(hex => hex.corners.forEach(({ x }) => xs.push(x)))
+    this.xmin = Math.min(...xs);
+    this.xmax = Math.max(...xs);
+    this.stroke_width = 3;
+
     this.rootElement = rootElement;
-    this.svg = SVG().addTo(this.rootElement).size('100%', '100%').attr({ id: 'svgboard', });
+    this.svg = SVG().addTo(this.rootElement).attr({ id: 'svgboard', });
     this.createBoard();
     this.createExtraControls();
     this.attachListeners();
@@ -40,13 +50,14 @@ class GameClient {
     this.grid.forEach(hex => {
       // create a polygon from a hex's corner points
       const polygon = this.svg
-        .polygon(hex.corners.map(({ x, y }) => [x, y]).reduce((a, b) => a.concat(b), []))
+        .polygon(hex.corners.map(({ x, y }) => [x-this.xmin+this.stroke_width, y]).reduce((a, b) => a.concat(b), []))
         .fill('#C4A484')
-        .stroke({ width: 3, color: '#999' })
+        .stroke({ width: this.stroke_width, color: '#999' })
         .attr({ id: `hex_${hex.q}_${hex.r}`, class: 'hex', });
 
       this.svg.group().add(polygon);
     });
+    this.svg.size(this.xmax-this.xmin+2*this.stroke_width);
 
     if (this.debug) {
       // show q_r coordinates for each cell
@@ -54,7 +65,7 @@ class GameClient {
         const text = this.svg
           .plain(`${hex.q}_${hex.r}`)
           .stroke({ color: "red", width: 1 })
-          .attr({ x: hex.corners[0].x, y: hex.corners[0].y, });
+          .attr({ x: hex.corners[0].x-this.xmin+this.stroke_width, y: hex.corners[0].y, });
         this.svg.group().add(text);
       });
     }
@@ -115,7 +126,7 @@ class GameClient {
       this.rootElement.querySelectorAll(".winning_hex").forEach(c => c.parentNode.removeChild(c));
       state.ctx.gameover.winning_line.map(h => this.grid.getHex(h)).forEach(hex => {
         const polygon = this.svg
-          .polygon(hex.corners.map(({ x, y }) => `${x},${y}`))
+          .polygon(hex.corners.map(({ x, y }) => `${x-this.xmin+this.stroke_width},${y}`))
           .fill("none")
           .stroke({ width: 3, color: 'yellow' })
           .attr({ class: 'winning_hex', });
@@ -125,7 +136,7 @@ class GameClient {
     } else {
       state.G.current.map(s => this.grid.getHex(state.G.stones[s])).forEach(hex => {
         const polygon = this.svg
-          .polygon(hex.corners.map(({ x, y }) => `${x},${y}`))
+          .polygon(hex.corners.map(({ x, y }) => `${x-this.xmin+this.stroke_width},${y}`))
           .fill("none")
           .stroke({ width: 3, color: 'green' })
           .attr({ class: 'selected_hex', });
