@@ -15,6 +15,16 @@ function getCellValue(grid: Grid<Hex>, stones: Stone[], q: number, r: number): S
   }
 }
 
+const DRAW_DATA = {
+  stroke_width: 3,
+  colors: {
+    board: '#C4A484',
+    stroke: '#999',
+    stroke_selected: 'green',
+    stroke_won: 'yellow',
+  },
+};
+
 class GameClient {
   debug: boolean;
   client: any;
@@ -23,7 +33,6 @@ class GameClient {
   svg: Svg;
   xmin: number;
   xmax: number;
-  stroke_width: number;
 
   constructor(rootElement, debug = false) {
     this.debug = debug;
@@ -36,7 +45,6 @@ class GameClient {
     this.grid.forEach(hex => hex.corners.forEach(({ x }) => xs.push(x)))
     this.xmin = Math.min(...xs);
     this.xmax = Math.max(...xs);
-    this.stroke_width = 3;
 
     this.rootElement = rootElement;
     this.svg = SVG().addTo(this.rootElement).attr({ id: 'svgboard', });
@@ -50,14 +58,14 @@ class GameClient {
     this.grid.forEach(hex => {
       // create a polygon from a hex's corner points
       const polygon = this.svg
-        .polygon(hex.corners.map(({ x, y }) => [x-this.xmin+this.stroke_width, y]).reduce((a, b) => a.concat(b), []))
-        .fill('#C4A484')
-        .stroke({ width: this.stroke_width, color: '#999' })
+        .polygon(hex.corners.map(({ x, y }) => [x - this.xmin + DRAW_DATA.stroke_width, y]).reduce((a, b) => a.concat(b), []))
+        .fill(DRAW_DATA.colors.board)
+        .stroke({ width: DRAW_DATA.stroke_width, color: DRAW_DATA.colors.stroke })
         .attr({ id: `hex_${hex.q}_${hex.r}`, class: 'hex', });
 
       this.svg.group().add(polygon);
     });
-    this.svg.size(this.xmax-this.xmin+2*this.stroke_width);
+    this.svg.size(this.xmax - this.xmin + 2 * DRAW_DATA.stroke_width);
 
     if (this.debug) {
       // show q_r coordinates for each cell
@@ -65,7 +73,7 @@ class GameClient {
         const text = this.svg
           .plain(`${hex.q}_${hex.r}`)
           .stroke({ color: "red", width: 1 })
-          .attr({ x: hex.corners[0].x-this.xmin+this.stroke_width, y: hex.corners[0].y, });
+          .attr({ x: hex.corners[0].x - this.xmin + DRAW_DATA.stroke_width, y: hex.corners[0].y, });
         this.svg.group().add(text);
       });
     }
@@ -105,16 +113,8 @@ class GameClient {
     cells.forEach(cell => {
       const cellId = parseId(cell.id)!;
       const cellValue = getCellValue(this.grid, state.G.stones, cellId[0], cellId[1]);
-      // console.debug(cellId, cellValue);
       cell.style.fill = cellValue !== null ? cellValue : '';
-      cell.style.stroke = '#999';
     });
-
-    // let hex = [3, 3];
-    // this.rootElement.querySelector(`#hex_3_3`).style.fill = "green";
-    // let n = this.grid.neighborOf(hex, Direction.SE);
-    // console.log(n);
-    // this.rootElement.querySelector(`#hex_${n.q}_${n.r}`).style.fill = "red";
 
     this.rootElement.querySelectorAll(".selected_hex").forEach(c => c.parentNode.removeChild(c));
     this.rootElement.querySelectorAll(".winning_hex").forEach(c => c.parentNode.removeChild(c));
@@ -126,9 +126,9 @@ class GameClient {
       this.rootElement.querySelectorAll(".winning_hex").forEach(c => c.parentNode.removeChild(c));
       state.ctx.gameover.winning_line.map(h => this.grid.getHex(h)).forEach(hex => {
         const polygon = this.svg
-          .polygon(hex.corners.map(({ x, y }) => `${x-this.xmin+this.stroke_width},${y}`))
+          .polygon(hex.corners.map(({ x, y }) => `${x - this.xmin + DRAW_DATA.stroke_width},${y}`))
           .fill("none")
-          .stroke({ width: 3, color: 'yellow' })
+          .stroke({ width: DRAW_DATA.stroke_width, color: DRAW_DATA.colors.stroke_won })
           .attr({ class: 'winning_hex', });
 
         this.svg.group().add(polygon);
@@ -136,9 +136,9 @@ class GameClient {
     } else {
       state.G.current.map(s => this.grid.getHex(state.G.stones[s])).forEach(hex => {
         const polygon = this.svg
-          .polygon(hex.corners.map(({ x, y }) => `${x-this.xmin+this.stroke_width},${y}`))
+          .polygon(hex.corners.map(({ x, y }) => `${x - this.xmin + DRAW_DATA.stroke_width},${y}`))
           .fill("none")
-          .stroke({ width: 3, color: 'green' })
+          .stroke({ width: DRAW_DATA.stroke_width, color: DRAW_DATA.colors.stroke_selected })
           .attr({ class: 'selected_hex', });
 
         this.svg.group().add(polygon);
@@ -152,12 +152,13 @@ function makeMoveDemo(node, move: ParadoxMove) {
   let svg = SVG().addTo(item).size('100%', '100%');
   const Tile = defineHex({ origin: 'topLeft', dimensions: 15, });
   const grid = new Grid(Tile, spiral({ start: [3, 3], radius: 3 }));
+  const STROKE_WIDTH = 3;
   grid.forEach(hex => {
     // create a polygon from a hex's corner points
     const polygon = svg
       .polygon(hex.corners.map(({ x, y }) => [x, y]).reduce((a, b) => a.concat(b), []))
-      .fill('#C4A484')
-      .stroke({ width: 3, color: '#999' })
+      .fill(DRAW_DATA.colors.board)
+      .stroke({ width: STROKE_WIDTH, color: DRAW_DATA.colors.stroke })
       .attr({ id: `demohex_${hex.q}_${hex.r}`, class: 'hex', });
 
     svg.group().add(polygon);
@@ -171,7 +172,7 @@ function makeMoveDemo(node, move: ParadoxMove) {
     const polygon = svg
       .polygon(src_hex.corners.map(({ x, y }) => [x, y]).reduce((a, b) => a.concat(b), []))
       .fill(stone.color)
-      .stroke({ width: 3, color: '#999' })
+      .stroke({ width: STROKE_WIDTH, color: DRAW_DATA.colors.stroke })
       .attr({ class: 'hex', }).animate(1000).dmove(dx, dy).loop(undefined, true, 100);
 
     svg.group().add(polygon.element());
