@@ -15,24 +15,27 @@ export type ParadoxMove = {
   dest: StonePair,
 };
 
+const GRID_CENTER: [number, number] = [3, 3];
+const GRID_RADIUS = 3;
+
 function makeGrid() {
   const Tile = defineHex({ origin: 'topLeft', dimensions: 30, });
-  return new Grid(Tile, spiral({ start: [3, 3], radius: 3 }));
+  return new Grid(Tile, spiral({ start: GRID_CENTER, radius: GRID_RADIUS }));
 }
 
 const GRID = makeGrid();
 
 function setup() {
-  const outer_ring_traverer = ring({ center: [3, 3], radius: 3 });
+  const outer_ring_traverer = ring({ center: GRID_CENTER, radius: GRID_RADIUS });
   let stones: Stone[] = [];
   let c: StoneColor = 'white';
   GRID.traverse(outer_ring_traverer).forEach(hex => {
     stones.push({ color: c, q: hex.q, r: hex.r });
     c = c === "white" ? "black" : "white";
   });
-  let mb = GRID.neighborOf([3, 3], Direction.E)!;
+  let mb = GRID.neighborOf(GRID_CENTER, Direction.E)!;
   stones.push({ color: "black", q: mb.q, r: mb.r });
-  let mw = GRID.neighborOf([3, 3], Direction.W)!;
+  let mw = GRID.neighborOf(GRID_CENTER, Direction.W)!;
   stones.push({ color: "white", q: mw.q, r: mw.r });
 
   return { grid: JSON.stringify(GRID), stones: stones, };
