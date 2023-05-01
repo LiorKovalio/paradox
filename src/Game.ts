@@ -41,6 +41,10 @@ function setup() {
   return { grid: JSON.stringify(GRID), stones: stones, };
 }
 
+function pointyDirections(): Direction[] {
+  return [Direction.NE, Direction.E, Direction.SE, Direction.SW, Direction.W, Direction.NW];
+}
+
 function pickStone(G, ctx, id) {
   const idhex = GRID.getHex(id);
   if (idhex) {
@@ -230,7 +234,7 @@ export const Paradox = {
         return [];
       }
       function pairStone(grid, stone, stones) {
-        return [Direction.NE, Direction.E, Direction.SE, Direction.SW, Direction.W, Direction.NW,]
+        return pointyDirections()
           .map(d => grid.neighborOf(stone, d))
           .filter(h => grid.getHex(h))
           .map(h => stones.find(s => isSameHex(h, s)))
@@ -298,7 +302,7 @@ function checkWin(G, ctx) {
 
   G.stones.forEach(h => {
     // console.log(h);
-    [Direction.NE, Direction.E, Direction.SE, Direction.SW, Direction.W, Direction.NW,]
+    pointyDirections()
       .forEach(d => {
         // console.log("Direction", d);
         const line_t = line({ start: h, direction: d, length: 4 });
