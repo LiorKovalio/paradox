@@ -103,6 +103,7 @@ class GameClient {
     });
 
     // this.rootElement.querySelector('#undoBtn').onclick = event=>this.client.moves.undo();
+    // this.rootElement.querySelector('#undoBtn').onclick = event=>this.client.undo();
     this.rootElement.querySelector('#clearBtn').onclick = event => this.client.moves.clear();
   }
 
