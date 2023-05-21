@@ -1,6 +1,7 @@
 import { defineHex, Grid, Hex, spiral } from 'honeycomb-grid'
 import { SVG, Svg } from '@svgdotjs/svg.js'
 import { Client } from 'boardgame.io/client';
+import { SocketIO } from 'boardgame.io/multiplayer'
 import { Paradox, StoneColor, Stone, ParadoxMove } from './Game';
 
 function parseId(id: string): number[] | null {
@@ -36,7 +37,7 @@ class GameClient {
 
   constructor(rootElement, debug = false) {
     this.debug = debug;
-    this.client = Client({ game: Paradox, debug: debug });
+    this.client = Client({ game: Paradox, debug: debug, multiplayer: SocketIO({ server: "http://localhost:8000" }) });
     this.client.start();
     const deserializedGrid = JSON.parse(this.client.getState().G.grid);
     this.grid = Grid.fromJSON(deserializedGrid);

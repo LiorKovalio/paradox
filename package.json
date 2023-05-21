@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "parcel index.html --open",
+    "start:server": "node Server.mjs",
     "build": "parcel build index.html",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -13,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "@svgdotjs/svg.js": "^3.1.2",
+    "bgio-firebase": "^0.5.0",
     "boardgame.io": "^0.44.4",
     "honeycomb-grid": "^4.0.0-beta.8"
   },
