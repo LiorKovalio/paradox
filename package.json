@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/Server.js",
+    "serve": "ts-node --transpileOnly src/Server.ts",
     "build": "parcel build src/Server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

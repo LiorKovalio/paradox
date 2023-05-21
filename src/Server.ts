@@ -20,7 +20,11 @@ const server = Server({
 });
 
 server.router.get('/healthz', (ctx, next) => {
-  ctx.body = 'alive';
+  // This must be always set first before status, since null | undefined
+  // body automatically sets the status to 204
+  ctx.body = null;
+  // Now we override the 204 status with the desired one
+  ctx.status = 200;
 });
 
 server.run(8000, () => console.log("server running..."));
