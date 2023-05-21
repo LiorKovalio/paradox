@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Paradox powered by boardgame.io</title>
+  <meta charset="utf-8" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #svgboard {
+      min-height: 40dvh;
+    }
+
+    #move_list {
+      list-style-type: none;
+      height: 18dvh;
+    }
+
+    #move_list>li {
+      display: inline-block;
+      height: 100%;
+    }
+
+    footer {
+      padding-top: 50px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <header></header>
+  </div>
+  <button type="button" id="game_info_toggler">Info</button>
+  <div id="game_info">
+    <pre>
+Paradox is a 2-players game, white and black.
+The goal is to make a straight sequence of 4 stones of the player's color.
+Each turn, the player has to pick 2 adjacent stones of different colors and either move them in the same orientation, or switch them.
+A player may not play the exact opposite move the the last move played.
+
+For switching, click on either of the previously selected stones.
+Note that moving is done by clicking the destination of the <b>2nd</b> stone.
+</pre>
+    <ul id="move_list">
+    </ul>
+  </div>
+  <footer>
+    <p>
+      By Lior Kovalio <a href="https://www.linkedin.com/in/lior-kovalio-24a275145/">
+        <svg width="19" height="17" viewBox="0 0 19 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M0.0214844 1.97475C0.0214844 1.40235 0.224193 0.930123 0.629592 0.558081C1.03499 0.186021 1.56203 0 2.21067 0C2.84774 0 3.36318 0.183154 3.75701 0.549495C4.16241 0.927273 4.36511 1.41952 4.36511 2.02626C4.36511 2.57576 4.16821 3.03366 3.77438 3.4C3.36898 3.77778 2.83616 3.96667 2.17592 3.96667H2.15855C1.52148 3.96667 1.00605 3.77778 0.612218 3.4C0.21839 3.02222 0.0214844 2.54713 0.0214844 1.97475ZM0.247353 17V5.52929H4.1045V17H0.247353ZM6.24156 17H10.0987V10.5949C10.0987 10.1943 10.145 9.88517 10.2377 9.66768C10.3999 9.27845 10.646 8.94932 10.9761 8.6803C11.3062 8.41127 11.7203 8.27677 12.2184 8.27677C13.5157 8.27677 14.1643 9.14107 14.1643 10.8697V17H18.0215V10.4232C18.0215 8.72895 17.6161 7.44394 16.8053 6.56818C15.9945 5.69242 14.923 5.25455 13.591 5.25455C12.0968 5.25455 10.9327 5.8899 10.0987 7.16061V7.19495H10.0813L10.0987 7.16061V5.52929H6.24156C6.26472 5.89562 6.27631 7.03467 6.27631 8.94646C6.27631 10.8582 6.26472 13.5427 6.24156 17Z"
+            fill="#2B3232" />
+        </svg></a> <a href="https://twitter.com/LiorKovalio?ref_src=twsrc%5Etfw">
+        <svg width="22" height="17" viewBox="0 0 22 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M18.8792 4.23211C18.8919 4.41654 18.8919 4.60098 18.8919 4.78712C18.8919 10.4588 14.5742 17 6.67905 17V16.9966C4.34679 17 2.06299 16.3319 0.0996094 15.0723C0.438738 15.1131 0.779567 15.1335 1.12125 15.1344C3.05402 15.1361 4.93155 14.4876 6.45211 13.2934C4.61537 13.2585 3.00473 12.061 2.44206 10.3126C3.08547 10.4367 3.74843 10.4112 4.37994 10.2387C2.37747 9.8341 0.936807 8.07471 0.936807 6.03144C0.936807 6.01274 0.936807 5.99489 0.936807 5.97705C1.53347 6.30937 2.20153 6.49381 2.88488 6.51421C0.998853 5.25374 0.417489 2.7447 1.55642 0.783024C3.73568 3.4646 6.95103 5.0948 10.4027 5.26734C10.0567 3.77653 10.5293 2.21433 11.6444 1.16635C13.3732 -0.458748 16.0922 -0.375453 17.7173 1.35249C18.6786 1.16295 19.5999 0.810222 20.4431 0.310454C20.1226 1.30404 19.452 2.14804 18.5562 2.68435C19.407 2.58406 20.2382 2.35627 21.021 2.00865C20.4448 2.87219 19.7189 3.62439 18.8792 4.23211Z"
+            fill="#2B3232" />
+        </svg></a> <a href="https://github.com/LiorKovalio/paradox">
+        <svg xmlns="http://www.w3.org/2000/svg" role="img" width="22" height="17" viewBox="0 0 24 24">
+          <title>View code on GitHub</title>
+          <path
+            d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+        </svg>
+      </a>
+    </p>
+    <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button"
+      data-slug="liorkovalio" data-color="#FFDD00" data-emoji="" data-font="Cookie" data-text="Buy me a coffee"
+      data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></script>
+  </footer>
+  <script src="./src/App.ts"></script>
+</body>
+
+</html>
