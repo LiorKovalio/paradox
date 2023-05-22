@@ -27,6 +27,7 @@ const DRAW_DATA = {
   },
 };
 
+const SERVER_URL = "https://paradox-ttnk.onrender.com";
 class GameClient {
   debug: boolean;
   client: any;
@@ -43,7 +44,7 @@ class GameClient {
     this.client = Client({
       game: Paradox, debug: debug, matchID: matchID, playerID: playerID, credentials: playerCredentials, multiplayer: SocketIO(
         {
-          server: "http://localhost:8000"
+          server: SERVER_URL
         })
     });
     this.client.start();
@@ -252,7 +253,7 @@ document.getElementById("game_info_toggler")?.addEventListener("click", () => {
 });
 
 // https://boardgame.io/documentation/#/api/Lobby
-const lobbyClient = new LobbyClient({ server: 'http://localhost:8000' });
+const lobbyClient = new LobbyClient({ server: SERVER_URL });
 
 // current game data
 let match_id: string | undefined = undefined;
