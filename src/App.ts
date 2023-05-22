@@ -1,6 +1,8 @@
 import { defineHex, Grid, Hex, spiral } from 'honeycomb-grid'
 import { SVG, Svg } from '@svgdotjs/svg.js'
 import { Client } from 'boardgame.io/client';
+import { SocketIO } from 'boardgame.io/multiplayer'
+import { LobbyClient } from 'boardgame.io/client';
 import { Paradox, StoneColor, Stone, ParadoxMove } from './Game';
 
 function parseId(id: string): number[] | null {
@@ -33,25 +35,42 @@ class GameClient {
   svg: Svg;
   xmin: number;
   xmax: number;
+  private _myturn: boolean;
+  private _inited: boolean;
 
-  constructor(rootElement, debug = false) {
+  constructor(rootElement, playerID, matchID, playerCredentials, debug = false) {
     this.debug = debug;
-    this.client = Client({ game: Paradox, debug: debug });
+    this.client = Client({
+      game: Paradox, debug: debug, matchID: matchID, playerID: playerID, credentials: playerCredentials, multiplayer: SocketIO(
+        {
+          server: "http://localhost:8000"
+        })
+    });
     this.client.start();
-    const deserializedGrid = JSON.parse(this.client.getState().G.grid);
-    this.grid = Grid.fromJSON(deserializedGrid);
-
-    let xs: number[] = [];
-    this.grid.forEach(hex => hex.corners.forEach(({ x }) => xs.push(x)))
-    this.xmin = Math.min(...xs);
-    this.xmax = Math.max(...xs);
+    this._inited = false;
 
     this.rootElement = rootElement;
     this.svg = SVG().addTo(this.rootElement).attr({ id: 'svgboard', });
-    this.createBoard();
     this.createExtraControls();
-    this.attachListeners();
     this.client.subscribe(state => this.update(state));
+  }
+
+  onStart() {
+    if (!this._inited) {
+      const deserializedGrid = JSON.parse(this.client.getState().G.grid);
+      this.grid = Grid.fromJSON(deserializedGrid);
+
+      let xs: number[] = [];
+      this.grid.forEach(hex => hex.corners.forEach(({ x }) => xs.push(x)))
+      this.xmin = Math.min(...xs);
+      this.xmax = Math.max(...xs);
+
+      this.createBoard();
+      this.attachListeners();
+
+      this._inited = true;
+      this._myturn = false;
+    }
   }
 
   createBoard() {
@@ -95,8 +114,10 @@ class GameClient {
     const cells = this.rootElement.querySelectorAll('.hex');
 
     const handleCellClick = event => {
-      const id = parseId(event.target.id);
-      this.client.moves.clickCell(id);
+      if (this._myturn) {
+        const id = parseId(event.target.id);
+        this.client.moves.clickCell(id);
+      }
     };
     cells.forEach(cell => {
       cell.onclick = handleCellClick;
@@ -104,11 +125,20 @@ class GameClient {
 
     // this.rootElement.querySelector('#undoBtn').onclick = event=>this.client.moves.undo();
     // this.rootElement.querySelector('#undoBtn').onclick = event=>this.client.undo();
-    this.rootElement.querySelector('#clearBtn').onclick = event => this.client.moves.clear();
+    this.rootElement.querySelector('#clearBtn').onclick = event => {
+      if (this._myturn) {
+        this.client.moves.clear();
+      }
+    }
   }
 
   update(state) {
-    this.rootElement.querySelector('header').innerText = `Player ${state.ctx.currentPlayer} (${state.G.players[state.ctx.currentPlayer].color}) Turn`;
+    // When using a remote master, the client won’t know the game state when it first runs
+    if (state === null) return;
+    this.onStart();
+
+    this._myturn = state.isActive;
+    this.rootElement.querySelector('header').innerText = `${this._myturn ? "Your Turn! " : ""}Player ${state.ctx.currentPlayer} (${state.G.players[state.ctx.currentPlayer].color}) Turn`;
     const cells = this.rootElement.querySelectorAll('.hex');
 
     cells.forEach(cell => {
@@ -134,6 +164,7 @@ class GameClient {
 
         this.svg.group().add(polygon);
       });
+      leaveGameRoom(this.client.playerID).then(() => { console.log("left match"); }, () => { console.error("failed to leave match"); });
     } else {
       state.G.current.map(s => this.grid.getHex(state.G.stones[s])).forEach(hex => {
         const polygon = this.svg
@@ -220,5 +251,79 @@ document.getElementById("game_info_toggler")?.addEventListener("click", () => {
   else { elem.style.display = 'none'; }
 });
 
+// https://boardgame.io/documentation/#/api/Lobby
+const lobbyClient = new LobbyClient({ server: 'http://localhost:8000' });
+
+// current game data
+let match_id: string | undefined = undefined;
+let player_credentials: string | undefined = undefined;
+
+async function newGameRoom() {
+  const { matchID } = await lobbyClient.createMatch('default', {
+    numPlayers: 2
+  });
+  await joinGameRoom("0", matchID);
+}
+
+async function joinGameRoom(playerID: string | null = null, matchID: string | null = null) {
+  console.log("try join");
+  if (matchID === null) {
+    const { matches } = await lobbyClient.listMatches('default');
+    console.log(matches);
+    for (const m of matches) {
+      console.log(m);
+      if (m.players.length === 2 && m.players[1].isConnected === undefined) {
+        matchID = m.matchID;
+        break;
+      }
+    }
+    if (matchID === null) {
+      console.error("no available matches");
+      await newGameRoom();
+      return;
+    }
+  }
+
+  console.log("try join", matchID);
+  playerID = playerID || "1";
+  const { playerCredentials } = await lobbyClient.joinMatch(
+    'default',
+    matchID,
+    {
+      playerID: playerID,
+      playerName: new Date().toLocaleString(),
+    }
+  );
+  match_id = matchID;
+  player_credentials = playerCredentials;
+
+  while (appElement!.firstChild) {
+    appElement!.removeChild(appElement!.firstChild);
+  }
+
+  appElement!.appendChild(document.createElement('header'));
+  const app = new GameClient(appElement, playerID, matchID, player_credentials);
+  appElement!.style.visibility = "";
+}
+
+async function leaveGameRoom(playerID) {
+  if (match_id && player_credentials) {
+    await lobbyClient.leaveMatch('default', match_id, {
+      playerID: playerID,
+      credentials: player_credentials,
+    });
+  } else {
+    console.error(`tried to leave a room, but match_id="${match_id}" and player_credentials="${player_credentials}"`);
+  }
+}
+
+document.getElementById("new")!.onclick = async () => {
+  await newGameRoom();
+};
+document.getElementById("join")!.onclick = async () => {
+  await joinGameRoom();
+};
+
+
 const appElement = document.getElementById('app');
-const app = new GameClient(appElement);
+appElement!.style.visibility = "hidden";

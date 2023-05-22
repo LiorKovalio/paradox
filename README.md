@@ -19,3 +19,16 @@ Hexagons are the bestagons! Check out [Honeycomb (honeycomb-grid)](https://abbek
 This project was created by following the boardgame.io tutorial, using [Parcel](https://parceljs.org/).\
 Install using ```npm install```\
 and run using ```npm start```
+
+
+## Multiplayer
+Switch to branch X
+Run server using ```ts-node --transpileOnly .\src\Server.ts```\
+Make sure the clients use the correct server address in the constructor LINK\
+than separetly run clients (same as before, ```npm start```) and use the "new game" and "join" buttons
+
+### TODO
+* Set schedualed task for clearing dead matches
+* Fill in the multiplayer readme names and links
+* Make lobby UI. Maybe list active games
+* Deploy separate branch. web service on render.com and front on vercel?

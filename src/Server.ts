@@ -1,5 +1,5 @@
 // import { Server, Origins } from 'boardgame.io/server';
-import { Server } from 'boardgame.io/server';
+import { Server, SocketIO } from 'boardgame.io/server';
 import { Paradox } from './Game';
 
 const server = Server({
@@ -15,8 +15,16 @@ const server = Server({
 
   //   // Allow localhost to connect, except when NODE_ENV is 'production'.
   //   // Origins.LOCALHOST_IN_DEVELOPMENT
-  //   "localhost"
+  //   "http://localhost"
   // ],
+  transport: new SocketIO({
+    socketOpts: {
+      cors: {
+        origin: "http://localhost:8000",
+        methods: ["GET", "POST"]
+      }
+    }
+  })
 });
 
 server.router.get('/healthz', (ctx, next) => {
