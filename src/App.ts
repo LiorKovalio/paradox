@@ -179,7 +179,7 @@ class GameClient {
   }
 }
 
-function makeMoveDemo(node, move: ParadoxMove) {
+function makeMoveDemo(node, move) {
   let item = node.appendChild(document.createElement("li"));
   let svg = SVG().addTo(item).size('100%', '100%');
   const Tile = defineHex({ origin: 'topLeft', dimensions: 15, });
