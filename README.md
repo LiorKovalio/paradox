@@ -22,13 +22,15 @@ and run using ```npm start```
 
 
 ## Multiplayer
-Switch to branch X
+See demo multiplayer version at [Paradox](https://paradox-game.onrender.com/) on [render](https://render.com/), deployed once as a static site and again as a web service.
+
+### Dev
+Switch to branch [render](https://github.com/LiorKovalio/paradox/tree/render)\
 Run server using ```ts-node --transpileOnly .\src\Server.ts```\
-Make sure the clients use the correct server address in the constructor LINK\
+Make sure the clients use the correct [SERVER_URL](src/App.ts#L30)\
 than separetly run clients (same as before, ```npm start```) and use the "new game" and "join" buttons
 
 ### TODO
 * Set schedualed task for clearing dead matches
-* Fill in the multiplayer readme names and links
-* Make lobby UI. Maybe list active games
-* Deploy separate branch. web service on render.com and front on vercel?
+* Polish Lobby UI
+* Fix localhost support on Server.ts

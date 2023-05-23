@@ -2,6 +2,14 @@
 import { Server, SocketIO } from 'boardgame.io/server';
 import { Paradox } from './Game';
 
+const socketOpts = {};
+// const socketOpts = {
+//   cors: {
+//     origin: "http://localhost:8000",
+//     methods: ["GET", "POST"]
+//   }
+// };
+
 const server = Server({
   // Provide the definitions for your game(s).
   games: [Paradox],
@@ -9,21 +17,8 @@ const server = Server({
   // Provide the database storage class to use.
   // db: new DbConnector(),
 
-  // origins: [
-  //   // Allow your game site to connect.
-  //   // 'https://www.mygame.domain',
-
-  //   // Allow localhost to connect, except when NODE_ENV is 'production'.
-  //   // Origins.LOCALHOST_IN_DEVELOPMENT
-  //   "http://localhost"
-  // ],
   transport: new SocketIO({
-    socketOpts: {
-      cors: {
-        origin: "http://localhost:8000",
-        methods: ["GET", "POST"]
-      }
-    }
+    socketOpts: socketOpts
   })
 });
 

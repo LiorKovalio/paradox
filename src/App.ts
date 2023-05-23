@@ -133,13 +133,23 @@ class GameClient {
     }
   }
 
+  forfeitMove() { if (this._myturn) { this.client.moves.forfeit(); } }
+
   update(state) {
     // When using a remote master, the client won’t know the game state when it first runs
     if (state === null) return;
     this.onStart();
 
     this._myturn = state.isActive;
-    this.rootElement.querySelector('header').innerText = `${this._myturn ? "Your Turn! " : ""}Player ${state.ctx.currentPlayer} (${state.G.players[state.ctx.currentPlayer].color}) Turn`;
+    // this.rootElement.querySelector('header').innerText = `${this._myturn ? "Your Turn! " : ""}Player ${state.ctx.currentPlayer} (${state.G.players[state.ctx.currentPlayer].color}) Turn`;
+    const headerElem = this.rootElement.querySelector('header');
+    while (headerElem.firstChild) { headerElem.removeChild(headerElem.firstChild); }
+    if (this._myturn) {
+      headerElem.appendChild(document.createElement("span")).innerText = `Your Turn! (${state.G.players[state.ctx.currentPlayer].color})`;
+    }
+    else {
+      headerElem.appendChild(document.createElement("span")).innerText = `Their Turn! (${state.G.players[state.ctx.currentPlayer].color})`;
+    }
     const cells = this.rootElement.querySelectorAll('.hex');
 
     cells.forEach(cell => {
@@ -252,11 +262,58 @@ document.getElementById("game_info_toggler")?.addEventListener("click", () => {
   else { elem.style.display = 'none'; }
 });
 
+
 // https://boardgame.io/documentation/#/api/Lobby
 const lobbyClient = new LobbyClient({ server: SERVER_URL });
+const lobbyElem = document.getElementById("lobby")!;
+function refreshLobby() {
+  // clear old
+  lobbyElem.querySelectorAll(":scope > :not(.lobbyHeader)").forEach(e => lobbyElem.removeChild(e));
+
+  lobbyClient.listMatches("default", { isGameover: false }).then(({ matches }) => {
+    // filter out dead games
+    matches = matches.filter(m => m.players.filter(x => x.isConnected === undefined || x.isConnected === false).length !== m.players.length);
+
+    if (matches.length === 0) {
+      const noGamesElem = lobbyElem.appendChild(document.createElement("span"));
+      noGamesElem.innerText = "no available games";
+      noGamesElem.style.gridColumn = "2";
+    } else {
+      for (const m of matches) {
+        lobbyElem.appendChild(document.createElement("span")).innerText = m.matchID;
+        const playersElem = lobbyElem.appendChild(document.createElement("span"));
+
+        m.players.filter(x => x.isConnected === true).map(x => x.name || x.id.toString()).forEach(s => {
+          playersElem.appendChild(document.createElement("span")).innerText = s;
+          playersElem.appendChild(document.createElement("span")).innerText = " - ";
+        });
+        if (playersElem.lastChild) {
+          playersElem.removeChild(playersElem.lastChild);
+          playersElem.firstChild.style.background = "white";
+          playersElem.firstChild.style.border = "1px solid black";
+          if (playersElem.children.length > 1) {
+            playersElem.lastChild.style.background = "black";
+            playersElem.lastChild.style.color = "white";
+          }
+        }
+
+        if (canJoin(m)) {
+          const joinElem = lobbyElem.appendChild(document.createElement("button"));
+          joinElem.innerText = "join";
+          joinElem.onclick = () => { joinGameRoom("1", m.matchID) };
+        } else {
+          lobbyElem.appendChild(document.createElement("span"));
+        }
+      }
+    }
+  });
+}
+
+refreshLobby();
 
 // current game data
 let match_id: string | undefined = undefined;
+let player_id: string | undefined = undefined;
 let player_credentials: string | undefined = undefined;
 
 async function newGameRoom() {
@@ -266,6 +323,12 @@ async function newGameRoom() {
   await joinGameRoom("0", matchID);
 }
 
+function canJoin(match) {
+  return match.players.length === 2 && match.players[1].isConnected === undefined;
+}
+
+let gameClient = null;
+
 async function joinGameRoom(playerID: string | null = null, matchID: string | null = null) {
   console.log("try join");
   if (matchID === null) {
@@ -273,7 +336,7 @@ async function joinGameRoom(playerID: string | null = null, matchID: string | nu
     console.log(matches);
     for (const m of matches) {
       console.log(m);
-      if (m.players.length === 2 && m.players[1].isConnected === undefined) {
+      if (canJoin(m)) {
         matchID = m.matchID;
         break;
       }
@@ -295,6 +358,8 @@ async function joinGameRoom(playerID: string | null = null, matchID: string | nu
       playerName: new Date().toLocaleString(),
     }
   );
+
+  player_id = playerID;
   match_id = matchID;
   player_credentials = playerCredentials;
 
@@ -303,8 +368,14 @@ async function joinGameRoom(playerID: string | null = null, matchID: string | nu
   }
 
   appElement!.appendChild(document.createElement('header'));
-  const app = new GameClient(appElement, playerID, matchID, player_credentials);
-  appElement!.style.visibility = "";
+  gameClient = new GameClient(appElement, playerID, matchID, player_credentials);
+  appElement!.style.visibility = "visible";
+
+  document.getElementById("new").style.visibility = "hidden";
+  document.getElementById("join").style.visibility = "hidden";
+  document.getElementById("forfeit").style.visibility = "visible";
+
+  lobbyElem.parentElement.style.visibility = "hidden";
 }
 
 async function leaveGameRoom(playerID) {
@@ -316,13 +387,28 @@ async function leaveGameRoom(playerID) {
   } else {
     console.error(`tried to leave a room, but match_id="${match_id}" and player_credentials="${player_credentials}"`);
   }
+
+  document.getElementById("new").style.visibility = "visible";
+  document.getElementById("join").style.visibility = "visible";
+  document.getElementById("forfeit").style.visibility = "hidden";
+
+  lobbyElem.style.visibility = "visible";
 }
+
+document.getElementById("refreshLobby")!.onclick = async () => {
+  refreshLobby();
+};
 
 document.getElementById("new")!.onclick = async () => {
   await newGameRoom();
 };
 document.getElementById("join")!.onclick = async () => {
   await joinGameRoom();
+};
+
+document.getElementById("forfeit")!.onclick = async () => {
+  gameClient?.forfeitMove();
+  await leaveGameRoom(player_id);
 };
 
 

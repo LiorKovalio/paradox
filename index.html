@@ -13,9 +13,20 @@
       min-height: 100vh;
     }
 
+    #lobby {
+      display: grid;
+      justify-content: center;
+      grid-template-columns: repeat(3, 1fr);
+      text-align: center;
+    }
+
     #controls {
       display: flex;
       justify-content: center;
+    }
+
+    #forfeit {
+      visibility: hidden;
     }
 
     #app {
@@ -48,12 +59,20 @@
 </head>
 
 <body>
+  <div id="controlsLobby">
+    <div><button type="button" id="refreshLobby">Refresh</button></div>
+    <div id="lobby">
+      <span class="lobbyHeader">MatchID</span>
+      <span class="lobbyHeader">Players</span>
+      <span class="lobbyHeader">Join</span>
+    </div>
+  </div>
   <div id="controls">
     <button type="button" id="new">New Game</button>
     <button type="button" id="join">Join</button>
+    <button type="button" id="forfeit">Forfeit</button>
   </div>
   <div id="app">
-    <header></header>
   </div>
   <button type="button" id="game_info_toggler">Info</button>
   <div id="game_info">

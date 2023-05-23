@@ -95,7 +95,7 @@ function isUndo(G, move): boolean {
 }
 
 function movePair(grid, stones, pair: StonePair, dest: { q: number, r: number }) {
-  if (grid.getHex(dest) && stones.findIndex(s => isSameHex(s, dest))===-1) {
+  if (grid.getHex(dest) && stones.findIndex(s => isSameHex(s, dest)) === -1) {
     const dist1 = grid.distance(dest, pair[1]);
     if (dist1 === 1) {
       const delta = neighborDirection(pair[1], dest);
@@ -135,7 +135,7 @@ function putStone(G, ctx, id) {
       }
     } else {
       let this_move = movePair(GRID, G.stones, [stone0, stone1], idhex);
-      if (this_move != null){
+      if (this_move != null) {
         if (!isUndo(G, this_move)) {
           G.history.push(this_move);
           stone1.q = idhex.q;
@@ -170,6 +170,11 @@ function clear(G, ctx, id) {
   ctx.events?.setActivePlayers!({ currentPlayer: "pickup" });
 }
 
+function forfeit(G, ctx, id) {
+  G.players[ctx.currentPlayer].forfeit = true;
+  ctx.events.endTurn();
+}
+
 function fullMove(G, ctx, ...id) {
   if (id === null || id.length !== 6) { return INVALID_MOVE; }
   pickStone(G, ctx, id.slice(0, 2));
@@ -197,6 +202,7 @@ export const Paradox = {
       pickup: {
         moves: {
           clickCell: pickStone,
+          forfeit,
           undo,
           clear,
           fullMove, // a hack for the AI
@@ -214,7 +220,23 @@ export const Paradox = {
     onEnd: (G, ctx) => {
       if (G.history.length === 0) { return; }
       if (G.current.length < 2) { return; }
-      checkWin(G, ctx);
+
+      // Check win by forfeits
+      let forfeits = {};
+      let maybeWinner = null;
+      for (let p in G.players) {
+        if (G.players[p].forfeit === true) {
+          forfeits[p] = true;
+        } else {
+          maybeWinner = p;
+        }
+      }
+      if (Object.keys(G.players).length - 1 === Object.keys(forfeits).length) {
+        G.winner = G.players[maybeWinner].color;
+        G.winning_line = null;
+      } else { // Check win
+        checkWin(G, ctx);
+      }
     },
   },
 
