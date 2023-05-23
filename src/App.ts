@@ -289,11 +289,11 @@ function refreshLobby() {
         });
         if (playersElem.lastChild) {
           playersElem.removeChild(playersElem.lastChild);
-          playersElem.firstChild.style.background = "white";
-          playersElem.firstChild.style.border = "1px solid black";
+          (playersElem.firstChild as HTMLElement).style.background = "white";
+          (playersElem.firstChild as HTMLElement).style.border = "1px solid black";
           if (playersElem.children.length > 1) {
-            playersElem.lastChild.style.background = "black";
-            playersElem.lastChild.style.color = "white";
+            (playersElem.lastChild as HTMLElement).style.background = "black";
+            (playersElem.lastChild as HTMLElement).style.color = "white";
           }
         }
 
