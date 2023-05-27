@@ -1,14 +1,5 @@
-// import { Server, Origins } from 'boardgame.io/server';
-import { Server, SocketIO } from 'boardgame.io/server';
+import { Server, Origins } from 'boardgame.io/server';
 import { Paradox } from './Game';
-
-const socketOpts = {};
-// const socketOpts = {
-//   cors: {
-//     origin: "http://localhost:8000",
-//     methods: ["GET", "POST"]
-//   }
-// };
 
 const server = Server({
   // Provide the definitions for your game(s).
@@ -17,9 +8,13 @@ const server = Server({
   // Provide the database storage class to use.
   // db: new DbConnector(),
 
-  transport: new SocketIO({
-    socketOpts: socketOpts
-  })
+  origins: [
+    // Allow your game site to connect.
+    'https://paradox-game.onrender.com/',
+
+    // Allow localhost to connect, except when NODE_ENV is 'production'.
+    Origins.LOCALHOST_IN_DEVELOPMENT
+  ],
 });
 
 server.router.get('/healthz', (ctx, next) => {
