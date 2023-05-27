@@ -166,7 +166,7 @@ class GameClient {
       this.rootElement.querySelector("header").innerText = `player ${state.ctx.gameover.winner} (${state.ctx.gameover.color}) wins`;
 
       this.rootElement.querySelectorAll(".winning_hex").forEach(c => c.parentNode.removeChild(c));
-      state.ctx.gameover.winning_line.map(h => this.grid.getHex(h)).forEach(hex => {
+      state.ctx.gameover.winning_line?.map(h => this.grid.getHex(h)).forEach(hex => {
         const polygon = this.svg
           .polygon(hex.corners.map(({ x, y }) => `${x - this.xmin + DRAW_DATA.stroke_width},${y}`))
           .fill("none")

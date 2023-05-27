@@ -45,7 +45,7 @@ function pointyDirections(): Direction[] {
   return [Direction.NE, Direction.E, Direction.SE, Direction.SW, Direction.W, Direction.NW];
 }
 
-function pickStone(G, ctx, id) {
+function pickStone({ G, events }, id) {
   const idhex = GRID.getHex(id);
   if (idhex) {
     let stone_i = G.stones.findIndex(s => isSameHex(s, idhex));
@@ -67,7 +67,7 @@ function pickStone(G, ctx, id) {
     }
   }
   if (G.current.length === 2) {
-    ctx.events?.setActivePlayers!({ currentPlayer: "putdown" });
+    events.setActivePlayers!({ currentPlayer: "putdown" });
     return;
   }
   return INVALID_MOVE;
@@ -118,7 +118,7 @@ function movePair(grid, stones, pair: StonePair, dest: { q: number, r: number })
   return null;
 }
 
-function putStone(G, ctx, id) {
+function putStone({ G, events }, id) {
   const idhex = GRID.getHex(id);
   if (idhex) {
     let stone0 = G.stones[G.current[0]];
@@ -130,7 +130,7 @@ function putStone(G, ctx, id) {
         let temp = stone0.color;
         stone0.color = stone1.color;
         stone1.color = temp;
-        ctx.events.endTurn();
+        events.endTurn();
         return;
       }
     } else {
@@ -142,7 +142,7 @@ function putStone(G, ctx, id) {
           stone1.r = idhex.r;
           stone0.q = this_move.dest[0].q;
           stone0.r = this_move.dest[0].r;
-          ctx.events.endTurn();
+          events.endTurn();
           return;
         }
       }
@@ -151,7 +151,7 @@ function putStone(G, ctx, id) {
   return INVALID_MOVE;
 }
 
-function undo(G, ctx, id) {
+function undo({ G, events }) {
   if (G.history.length === 0) {
     return INVALID_MOVE;
   }
@@ -162,24 +162,24 @@ function undo(G, ctx, id) {
   G.stones[stone0_i].r = to_undo.src[0].r;
   G.stones[stone1_i].q = to_undo.src[1].q;
   G.stones[stone1_i].r = to_undo.src[1].r;
-  ctx.events.endTurn();
+  events.endTurn();
 }
 
-function clear(G, ctx, id) {
+function clear({ G, events }) {
   G.current = [];
-  ctx.events?.setActivePlayers!({ currentPlayer: "pickup" });
+  events.setActivePlayers!({ currentPlayer: "pickup" });
 }
 
-function forfeit(G, ctx, id) {
-  G.players[ctx.currentPlayer].forfeit = true;
-  ctx.events.endTurn();
+function forfeit({ G, events, playerID }) {
+  G.players[playerID].forfeit = true;
+  events.endTurn();
 }
 
-function fullMove(G, ctx, ...id) {
+function fullMove({ G, events }, ...id) {
   if (id === null || id.length !== 6) { return INVALID_MOVE; }
-  pickStone(G, ctx, id.slice(0, 2));
-  pickStone(G, ctx, id.slice(2, 4));
-  putStone(G, ctx, id.slice(4, 6));
+  pickStone({ G, events }, id.slice(0, 2));
+  pickStone({ G, events }, id.slice(2, 4));
+  putStone({ G, events }, id.slice(4, 6));
 }
 
 export const Paradox = {
@@ -194,9 +194,9 @@ export const Paradox = {
   ),
 
   turn: {
-    onBegin: (G, ctx) => {
+    onBegin: ({ G, events }) => {
       G.current = [];
-      ctx.events?.setActivePlayers!({ currentPlayer: "pickup" });
+      events.setActivePlayers!({ currentPlayer: "pickup" });
     },
     stages: {
       pickup: {
@@ -217,9 +217,8 @@ export const Paradox = {
       },
     },
 
-    onEnd: (G, ctx) => {
+    onEnd: ({ G, events }) => {
       if (G.history.length === 0) { return; }
-      if (G.current.length < 2) { return; }
 
       // Check win by forfeits
       let forfeits = {};
@@ -234,13 +233,15 @@ export const Paradox = {
       if (Object.keys(G.players).length - 1 === Object.keys(forfeits).length) {
         G.winner = G.players[maybeWinner].color;
         G.winning_line = null;
-      } else { // Check win
-        checkWin(G, ctx);
+      }
+      else if (G.current.length < 2) { return; }
+      else { // Check win
+        checkWin(G, events);
       }
     },
   },
 
-  endIf: (G, ctx) => {
+  endIf: ({ G }) => {
     if (G.winner) {
       return {
         color: G.winner,
@@ -319,7 +320,7 @@ function isLineWin(grid, stones, line_traverser): boolean {
   return length >= 4;
 }
 
-function checkWin(G, ctx) {
+function checkWin(G, events) {
   console.log("checkWin");
 
   G.stones.forEach(h => {
