@@ -10,7 +10,7 @@ const server = Server({
 
   origins: [
     // Allow your game site to connect.
-    'https://paradox-game.onrender.com/',
+    'https://paradox-game.onrender.com',
 
     // Allow localhost to connect, except when NODE_ENV is 'production'.
     Origins.LOCALHOST_IN_DEVELOPMENT
