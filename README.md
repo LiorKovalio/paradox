@@ -32,5 +32,6 @@ than separetly run clients (same as before, ```npm start```) and use the "new ga
 
 ### TODO
 * Set schedualed task for clearing dead matches
+    * no need while deployed as web service on render, as it shuts down on inactive
 * Polish Lobby UI
-* Fix localhost support on Server.ts
+* Merge back to main breaking updates and UI fixes

@@ -1,6 +1,7 @@
 import { Server, Origins } from 'boardgame.io/server';
 import { Paradox } from './Game';
 
+const { FRONTEND_DOMAIN } = process.env;
 const server = Server({
   // Provide the definitions for your game(s).
   games: [Paradox],
@@ -10,7 +11,7 @@ const server = Server({
 
   origins: [
     // Allow your game site to connect.
-    'https://paradox-game.onrender.com',
+    FRONTEND_DOMAIN, // 'https://paradox-game.onrender.com',
 
     // Allow localhost to connect, except when NODE_ENV is 'production'.
     Origins.LOCALHOST_IN_DEVELOPMENT

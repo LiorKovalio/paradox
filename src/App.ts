@@ -27,7 +27,7 @@ const DRAW_DATA = {
   },
 };
 
-const SERVER_URL = "https://paradox-ttnk.onrender.com";
+const { SERVER_URL } = process.env; // "https://paradox-ttnk.onrender.com";
 class GameClient {
   debug: boolean;
   client: any;
