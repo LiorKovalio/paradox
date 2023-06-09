@@ -13,8 +13,8 @@
   "license": "ISC",
   "dependencies": {
     "@svgdotjs/svg.js": "^3.1.2",
-    "boardgame.io": "^0.44.4",
-    "honeycomb-grid": "^4.0.0-beta.8"
+    "boardgame.io": "",
+    "honeycomb-grid": ""
   },
   "devDependencies": {
     "parcel-bundler": "^1.8.1",
