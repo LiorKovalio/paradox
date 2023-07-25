@@ -17,7 +17,7 @@
     "honeycomb-grid": ""
   },
   "devDependencies": {
-    "parcel-bundler": "^1.8.1",
+    "parcel-bundler": "^1.12.5",
     "typescript": "^5.0.4"
   }
 }
