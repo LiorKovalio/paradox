@@ -2,7 +2,6 @@
   "name": "paradox_bgio",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "start": "parcel index.html --open",
     "build": "parcel build index.html",
@@ -17,7 +16,8 @@
     "honeycomb-grid": ""
   },
   "devDependencies": {
-    "parcel-bundler": "^1.12.5",
+    "parcel": "^2.10.1",
+    "process": "^0.11.10",
     "typescript": "^5.0.4"
   }
 }
