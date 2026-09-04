@@ -11,13 +11,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@svgdotjs/svg.js": "^3.1.2",
-    "boardgame.io": "",
-    "honeycomb-grid": ""
+    "@svgdotjs/svg.js": "^3.2.8",
+    "boardgame.io": "^0.50.2",
+    "honeycomb-grid": "^4.1.5"
   },
   "devDependencies": {
-    "parcel": "^2.10.1",
+    "parcel": "^2.16.4",
     "process": "^0.11.10",
-    "typescript": "^5.0.4"
+    "typescript": "^5.9.3"
   }
 }
